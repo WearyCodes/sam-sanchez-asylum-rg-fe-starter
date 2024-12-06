@@ -22,13 +22,13 @@ function TableRow(props) {
             return (
               <SubTable
                 dataObject={row[property]}
-                rowHeight={rowHeight} // so for the SubTablesTable the row should be an object of objects
+                rowHeight={rowHeight}
                 key={idx}
               />
             );
           } else {
             return (
-              <div  key={idx} style={{ overflow: 'hidden', flex: '1' }}>
+              <div key={idx} style={{ overflow: 'hidden', flex: '1' }}>
                 <TableInnerSquare
                   innerData={row[property]}
                   rowHeight={rowHeight}
@@ -38,9 +38,9 @@ function TableRow(props) {
           }
         } else {
           return <></>;
+        }
       })}
-    </div>
+    </div> // <-- Missing closing div tag
   );
 }
-
 export default TableRow;
