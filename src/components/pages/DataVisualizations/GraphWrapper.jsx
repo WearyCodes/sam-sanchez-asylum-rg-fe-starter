@@ -50,62 +50,60 @@ function GraphWrapper(props) {
         break;
     }
   }
-  function updateStateWithNewData(years, view, office, stateSettingCallback) {
-    /*
-          _                                                                             _
-        |                                                                                 |
-        |   Example request for once the `/summary` endpoint is up and running:           |
-        |                                                                                 |
-        |     `${url}/summary?to=2022&from=2015&office=ZLA`                               |
-        |                                                                                 |
-        |     so in axios we will say:                                                    |
-        |                                                                                 |     
-        |       axios.get(`${url}/summary`, {                                             |
-        |         params: {                                                               |
-        |           from: <year_start>,                                                   |
-        |           to: <year_end>,                                                       |
-        |           office: <office>,       [ <-- this one is optional! when    ]         |
-        |         },                        [ querying by `all offices` there's ]         |
-        |       })                          [ no `office` param in the query    ]         |
-        |                                                                                 |
-          _                                                                             _
-                                   -- Mack 
-    
-    */
 
-    if (office === 'all' || !office) {
-      axios
-        .get(process.env.REACT_APP_API_URI, {
-          // mock URL, can be simply replaced by `${Real_Production_URL}/summary` in prod!
-          params: {
-            from: years[0],
-            to: years[1],
-          },
-        })
-        .then(result => {
-          stateSettingCallback(view, office, test_data); // <-- `test_data` here can be simply replaced by `result.data` in prod!
-        })
-        .catch(err => {
-          console.error(err);
-        });
+  async function updateStateWithNewData(
+    years,
+    view,
+    office,
+    stateSettingCallback
+  ) {
+    console.log('updateStateWithNewData called with params:', {
+      years,
+      view,
+      office,
+    });
+    console.log('THIS IS VIEW', view);
+    // Validate inputs
+    if (!years || !Array.isArray(years) || years.length !== 2) {
+      console.error('Invalid years parameter:', years);
+      return;
+    }
+
+    if (!view) {
+      console.error('View parameter is required but was not provided');
+      return;
+    }
+
+    const BASE_URL = 'https://hrf-asylum-be-b.herokuapp.com/cases';
+
+    const params = {
+      from: years[0],
+      to: years[1],
+    };
+
+    if (office && office !== 'all') {
+      params.office = office;
+      console.log('Adding office parameter:', office);
     } else {
-      axios
-        .get(process.env.REACT_APP_API_URI, {
-          // mock URL, can be simply replaced by `${Real_Production_URL}/summary` in prod!
-          params: {
-            from: years[0],
-            to: years[1],
-            office: office,
-          },
-        })
-        .then(result => {
-          stateSettingCallback(view, office, test_data); // <-- `test_data` here can be simply replaced by `result.data` in prod!
-        })
-        .catch(err => {
-          console.error(err);
-        });
+      console.log('No specific office selected, querying all offices');
+    }
+
+    console.log('Making API request with params:', params);
+
+    try {
+      const fiscal = await axios.get(`${BASE_URL}/fiscalSummary`, { params });
+      const citizenship = await axios.get(`${BASE_URL}/citizenshipSummary`);
+      console.log('THIS IS BOFA RESPONSE', [
+        { ...fiscal.data, citizenshipResults: citizenship.data },
+      ]);
+      const bofa = [{ ...fiscal.data, citizenshipResults: citizenship.data }];
+      stateSettingCallback(view, office, bofa);
+    } catch (err) {
+      console.error('Error making API request:', err);
+      return;
     }
   }
+
   const clearQuery = (view, office) => {
     dispatch(resetVisualizationQuery(view, office));
   };
