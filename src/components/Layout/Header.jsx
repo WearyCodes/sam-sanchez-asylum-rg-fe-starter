@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import Logo from '../../styles/Images/WhiteLogo.png';
 import { colors } from '../../styles/data_vis_colors';
@@ -10,6 +10,7 @@ const { primary_accent_color } = colors;
 function HeaderContent() {
   const { loginWithRedirect, isAuthenticated, logout, user, isLoading } =
     useAuth0();
+  const history = useHistory();
 
   return (
     <div
@@ -40,7 +41,9 @@ function HeaderContent() {
               alignItems: 'center',
               gap: '10px',
               color: '#E2F0F7',
+              cursor: 'pointer', // Added to show it's clickable
             }}
+            onClick={() => history.push('/profile')}
           >
             <img
               src={user.picture}
